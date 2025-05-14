@@ -364,6 +364,14 @@ exports.login = async (req, res) => {
       });
     }
 
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid email or password'
+      });
+    }
+
     // Check if user is active
     if (!user.isActive) {
       return res.status(401).json({
@@ -371,6 +379,10 @@ exports.login = async (req, res) => {
         error: 'Account is deactivated'
       });
     }
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
 
     // Populate campus data before sending response
     await user.populate('campus', 'name code province');
