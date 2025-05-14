@@ -5,14 +5,18 @@ const { validationResult } = require('express-validator');
 // Create a new user
 exports.createUser = async (req, res) => {
   try {
+    console.log('Creating user with data:', req.body);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     // Verify campus exists
     const campus = await Campus.findById(req.body.campus);
     if (!campus) {
+      console.log('Campus not found:', req.body.campus);
       return res.status(400).json({
         success: false,
         error: 'Invalid campus ID'
@@ -20,7 +24,10 @@ exports.createUser = async (req, res) => {
     }
 
     const user = new User(req.body);
+    console.log('Attempting to save user:', user);
+    
     await user.save();
+    console.log('User saved successfully');
     
     // Populate campus data before sending response
     await user.populate('campus', 'name code province');
@@ -30,10 +37,12 @@ exports.createUser = async (req, res) => {
       data: user.getPublicProfile()
     });
   } catch (error) {
+    console.log('Error creating user:', error);
     if (error.code === 11000) {
+      console.log('Duplicate key error:', error.keyPattern);
       return res.status(400).json({
         success: false,
-        error: 'Username or email already exists'
+        error: 'Email already exists'
       });
     }
     res.status(500).json({
@@ -159,7 +168,7 @@ exports.updateUser = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        error: 'Username or email already exists'
+        error: 'Email already exists'
       });
     }
     res.status(500).json({
@@ -196,16 +205,18 @@ exports.deleteUser = async (req, res) => {
 // Update user password
 exports.updatePassword = async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
+    console.log(req.body);
+    const { email, password } = req.body;
 
-    if (!currentPassword || !newPassword) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Please provide both current and new password'
+        error: 'Please provide both email and new password'
       });
     }
 
-    const user = await User.findById(req.params.id);
+    const user = await User.findOne({ email });
+    console.log(user);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -213,15 +224,7 @@ exports.updatePassword = async (req, res) => {
       });
     }
 
-    const isMatch = await user.comparePassword(currentPassword);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        error: 'Current password is incorrect'
-      });
-    }
-
-    user.password = newPassword;
+    user.password = password;
     await user.save();
 
     res.status(200).json({
@@ -337,6 +340,49 @@ exports.getUsersByCampus = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error fetching users by campus'
+    });
+  }
+};
+
+// Login user
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide both email and password'
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid email or password'
+      });
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      return res.status(401).json({
+        success: false,
+        error: 'Account is deactivated'
+      });
+    }
+
+    // Populate campus data before sending response
+    await user.populate('campus', 'name code province');
+
+    res.status(200).json({
+      success: true,
+      data: user.getPublicProfile()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Error during login'
     });
   }
 };

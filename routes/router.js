@@ -8,11 +8,7 @@ const courseRoutes = require('./courseRoutes');
 const maintenanceRoutes = require('./maintenanceRoutes');
 
 // Validation middleware
-const userValidation = [
-  check('username')
-    .trim()
-    .isLength({ min: 3 })
-    .withMessage('Username must be at least 3 characters long'),
+const userValidation = [ 
   check('email')
     .isEmail()
     .withMessage('Please provide a valid email')
@@ -54,22 +50,34 @@ const campusValidation = [
 ];
 
 const passwordUpdateValidation = [
-  check('currentPassword')
-    .notEmpty()
-    .withMessage('Current password is required'),
-  check('newPassword')
+  check('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  check('password')
     .isLength({ min: 6 })
     .withMessage('New password must be at least 6 characters long')
 ];
 
+const loginValidation = [
+  check('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  check('password')
+    .notEmpty()
+    .withMessage('Password is required')
+];
+
 // User routes
+router.post('/users/login', loginValidation, userController.login);
+router.put('/users/password', passwordUpdateValidation, userController.updatePassword);
 router.post('/users', userValidation, userController.createUser);
 router.get('/users', userController.getUsers);
 router.get('/users/search', userController.searchUsers);
 router.get('/users/:id', userController.getUserById);
 router.put('/users/:id', userValidation, userController.updateUser);
 router.delete('/users/:id', userController.deleteUser);
-router.put('/users/:id/password', passwordUpdateValidation, userController.updatePassword);
 router.put('/users/:id/toggle-status', userController.toggleUserStatus);
 router.get('/users/campus/:campusId', userController.getUsersByCampus);
 

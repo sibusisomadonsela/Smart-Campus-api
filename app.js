@@ -3,6 +3,9 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const router = require('./routes/router');
 
+//mongodb+srv://admin:<password>@cluster0.zqzqy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+//https://cloud.mongodb.com/v2/682304d7e0461709850fb5f1#/overview
+//mongodb+srv://smartdb_user:Mtimande@smartcampus.opezynu.mongodb.net/
 // Create Express app
 const app = express();
 
@@ -15,7 +18,7 @@ app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 app.use('/api', router);
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-campus', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://smartdb_user:Mtimande@smartcampus.opezynu.mongodb.net/smartcampusdb?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })

@@ -1,14 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    minlength: 3
-  },
+const userSchema = new mongoose.Schema({  
   email: {
     type: String,
     required: true,
@@ -23,7 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['student', 'teacher', 'admin', 'staff'],
+    enum: ['student', 'teacher', 'admin staff'],
     default: 'student'
   },
   firstName: {
@@ -40,7 +33,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  studentId: {
+  identification: {
     type: String,
     unique: true,
     sparse: true,
@@ -62,6 +55,10 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Drop any existing indexes and create new ones
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ identification: 1 }, { unique: true, sparse: true });
+
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
@@ -73,6 +70,14 @@ userSchema.pre('save', async function(next) {
   } catch (error) {
     next(error);
   }
+});
+
+// Normalize email before saving
+userSchema.pre('save', function(next) {
+  if (this.isModified('email')) {
+    this.email = this.email.toLowerCase().trim();
+  }
+  next();
 });
 
 // Method to compare password

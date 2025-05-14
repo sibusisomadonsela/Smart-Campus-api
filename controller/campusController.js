@@ -6,6 +6,7 @@ const { validationResult } = require('express-validator');
 exports.createCampus = async (req, res) => {
   try {
     const errors = validationResult(req);
+    console.log(req.body);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
