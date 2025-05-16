@@ -234,6 +234,11 @@ exports.updatePassword = async (req, res) => {
     user.password = password;
     await user.save();
 
+    let emailBody = await fs.readFile( './templates/passwordResetTemplate.html');
+    emailBody = emailBody.toString();
+    emailBody = emailBody.replace('[User Name]', user.firstName + " " + user.lastName);
+    await emailer.sendReviewHtmlBody(user.email, emailBody, 'Password Reset');    
+
     res.status(200).json({
       success: true,
       message: 'Password updated successfully'

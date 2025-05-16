@@ -23,9 +23,9 @@ const transporter = nodemailer.createTransport({
 
 exports.sendEmail = async (mailOptions) => {
   try {
-    console.log("Sending email : ", transporter);
+    //console.log("Sending email : ", transporter);
     //console.log("Sending email : ", transporter.GMAIL_USER);
-    console.log(mailOptions);
+    //console.log(mailOptions);
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ' + info.response);
     return info;
@@ -37,7 +37,7 @@ exports.sendEmail = async (mailOptions) => {
 
 exports.sendReviewHtmlBody = async (to, body, subject) => {
   const mailOptions = {
-    from: process.env.GMAIL_USER,
+    from: "smartcampusportal2379@gmail.com",
     to,
     subject,
     html: body,

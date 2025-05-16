@@ -33,7 +33,7 @@ const emailTest = async () => {
 //Test email
     let emailBody = await fs.readFile( './templates/accountConfirmationTemplate.html');
     emailBody = emailBody.toString();
-    emailBody = emailBody.replace('[User Name]', "jomdaka@gmail.com");
+    emailBody = emailBody.replace('[User Name]', "Sibusiso");
     await emailer.sendReviewHtmlBody("sibusisopraisgodmadonsela@gmail.com", emailBody, 'Account Confirmation');
 }
 
