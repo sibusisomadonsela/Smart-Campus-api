@@ -1,29 +1,48 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-
 // Use your Gmail credentials here
-const transporter = nodemailer.createTransport({
+/*const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_PASS
   }
+});*/
+
+const transporter = nodemailer.createTransport({
+  //pool: true, //Email stopped working, after commenting this line, email started going  
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS
+  },
 });
 
-const mailOptions = {
-  from: 'your-email@gmail.com',
-  to: 'recipient@example.com',
-  subject: 'Test Email from Node.js',
-  text: 'Hello from Node.js using Nodemailer and Gmail!'
+exports.sendEmail = async (mailOptions) => {
+  try {
+    console.log("Sending email : ", transporter);
+    //console.log("Sending email : ", transporter.GMAIL_USER);
+    console.log(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent: ' + info.response);
+    return info;
+  } catch (error) {
+    console.log('Error sending email: ', error);
+    throw error;
+  }
 };
 
-transporter.sendMail(mailOptions, (error, info) => {
-  if (error) {
-    return console.log('Error: ', error);
-  }
-  console.log('Email sent: ' + info.response);
-});
+exports.sendReviewHtmlBody = async (to, body, subject) => {
+  const mailOptions = {
+    from: process.env.GMAIL_USER,
+    to,
+    subject,
+    html: body,
+  };
+  return this.sendEmail(mailOptions);
+}
 
-module.exports = { transporter, mailOptions };
 

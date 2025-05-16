@@ -1,6 +1,8 @@
 const User = require('../model/User');
 const Campus = require('../model/Campus');
 const { validationResult } = require('express-validator');
+const fs = require("fs").promises;
+const emailer = require('../services/emailer');
 
 // Create a new user
 exports.createUser = async (req, res) => {
@@ -25,6 +27,11 @@ exports.createUser = async (req, res) => {
 
     const user = new User(req.body);
     console.log('Attempting to save user:', user);
+
+    let emailBody = await fs.readFile( './templates/accountConfirmationTemplate.html');
+    emailBody = emailBody.toString();
+    emailBody = emailBody.replace('[User Name]', user.firstName + " " + user.lastName);
+    await emailer.sendReviewHtmlBody(user.email, emailBody, 'Account Confirmation');    
     
     await user.save();
     console.log('User saved successfully');

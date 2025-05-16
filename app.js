@@ -3,6 +3,10 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const router = require('./routes/router');
 
+const fs = require("fs").promises;
+const path = require("path");
+const emailer = require('./services/emailer');
+
 //mongodb+srv://admin:<password>@cluster0.zqzqy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
 //https://cloud.mongodb.com/v2/682304d7e0461709850fb5f1#/overview
 //mongodb+srv://smartdb_user:Mtimande@smartcampus.opezynu.mongodb.net/
@@ -25,6 +29,15 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://smartdb_user:Mtimande
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 
+const emailTest = async () => {
+//Test email
+    let emailBody = await fs.readFile( './templates/accountConfirmationTemplate.html');
+    emailBody = emailBody.toString();
+    emailBody = emailBody.replace('[User Name]', "jomdaka@gmail.com");
+    await emailer.sendReviewHtmlBody("sibusisopraisgodmadonsela@gmail.com", emailBody, 'Account Confirmation');
+}
+
+emailTest();
 // Error handling for unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Promise Rejection:', err);
